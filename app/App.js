@@ -1,12 +1,5 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
 
-import React from 'react';
+import React, { Component} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -14,101 +7,164 @@ import {
   View,
   Text,
   StatusBar,
+  ImageBackground,
+  ActivityIndicator,
+  Image
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import Geolocation from '@react-native-community/geolocation';
+import Header from './component/Header.js'
+import Clock from './component/Clock.js'
 
-const App: () => React$Node = () => {
-  return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
+export default class App extends Component{
+
+  state = {
+      isLoading:true,
+      location:[35,139],
+      city:'singapore',
+      day:'test',
+      icon:'',
+      weather_data:null,
+  }
+
+  componentDidMount(){
+    this.getDay()
+    this.getLocation()
+
+    fetch(`http://api.weatherstack.com/current?access_key=228d778819d9090eb24c0f048ad269b4&query=${this.state.city}`)
+    .then( response => 
+       response.json()
+    )
+    .then( response => {
+
+        console.log(response)
+
+        this.setState({
+          weather_data:[response],
+          icon:response.current.weather_icons[0],
+          isLoading:false
+        })
+
+        return response
+      }
+    )
+    .catch( err => {
+      console.log(err)
+      alert(err)
+      throw err
+    })
+
+  }
+
+
+  getLocation = () =>{
+    Geolocation.getCurrentPosition(
+
+    position => {
+   
+      this.setState({ 
+        location: [position.coords.altitude,position.coords.longitude],
+        isLoading:false
+      })
+
+
+    },
+
+    error => Alert.alert(error.message),
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
+
+  }
+
+  getDay = () => {
+    let day = new Date()
+    day = day.getDay()
+    let dayList= ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+
+    for(var i = 0; i < 7; i++){
+      if (day == i)
+        this.setState({day:dayList[i]})
+    }
+
+    
+  }
+
+  render(){
+
+
+    return (
+      <View style={{flex:1}}> 
+        <ImageBackground source={require('./assets/day_weather.png')} style={{width:'100%',height:'100%'}}>
+          
+          <View style={{flex:1,marginBottom:20}}>
+            <Header/>
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
-  );
-};
+          
+
+          <View style={{flex:4}}>
+
+            <View style={{flex :1,backroundColor:'red'}}>
+              
+              <Text style={[styles.textHeader,{color:'maroon'}]}> 
+                {this.state.day} 
+              </Text>
+
+              <Text style={styles.textHeader}>
+                <Text style={[styles.textHeader,{color:'white'}]}>
+                  at {this.state.city} 
+                </Text>
+              </Text>
+
+            </View>
+
+            <View style={{flex:5}}>
+
+              <View style={{alignItems:'center'}}>
+                <Image source={require('./assets/rain_icon.png')} style={{width: "80%", height: 200}}/>
+              </View>
+              
+                {this.state.isLoading ? <ActivityIndicator/> : 
+                  this.state.weather_data &&
+                      this.state.weather_data.map(obj => (
+                        <View style={{flex:1}}>
+
+                          <View style={{alignItems:'center'}}>
+                            <Text style={[styles.textHeader,{fontStyle:'normal',fontSize:22,marginBottom:20,marginLeft:0}]}> 
+                              {obj.current.weather_descriptions[0]}
+                            </Text>
+                            <Text style={[styles.center]}> Humidity : {obj.current.humidity} </Text>
+                            <Text style={[styles.center]}> wind speed : {obj.current.wind_speed} </Text>
+                            <Text style={[styles.center]}> visibility : {obj.current.visibility} </Text>
+                          </View>
+
+
+                          <View style={{flex:1,alignItems:'flex-end',justifyContent:'center'}}>
+                            <Text style={{color:'white',fontSize:80}}> {obj.current.temperature}°C</Text>
+                          </View>
+
+
+                        </View>
+                      ))
+                  
+                }
+              
+            </View>
+
+          </View>
+
+        </ImageBackground>
+      </View>
+        
+    )
+  } 
+}
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  center:{
+    justifyContent:'center',
+    alignItems:'center'
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+
+  textHeader:{fontStyle:'italic',marginLeft:50,color:'snow',fontSize:18}
 });
 
-export default App;
