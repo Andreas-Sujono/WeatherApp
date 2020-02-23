@@ -4,7 +4,7 @@ Weather Mobile App
 Weather mobile app using react native. Get detail of the weather using weatherstack API
 
 
-<img src='./Readme-asset/demo.jpg' alt="demo" width='100%'>
+<img src='./Readme-asset/demo.png' alt="demo" width='100%'>
 
 Dependencies
 --------
