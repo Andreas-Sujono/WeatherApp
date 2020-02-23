@@ -48,11 +48,6 @@ export default class App extends Component{
         return response
       }
     )
-    .catch( err => {
-      console.log(err)
-      alert(err)
-      throw err
-    })
 
   }
 
@@ -68,10 +63,7 @@ export default class App extends Component{
       })
 
 
-    },
-
-    error => Alert.alert(error.message),
-    { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    }
     );
 
   }
@@ -126,7 +118,7 @@ export default class App extends Component{
                 {this.state.isLoading ? <ActivityIndicator/> : 
                   this.state.weather_data &&
                       this.state.weather_data.map(obj => (
-                        <View style={{flex:1}}>
+                        <View style={{flex:1}} key={parseInt(Math.random()*1000)}>
 
                           <View style={{alignItems:'center'}}>
                             <Text style={[styles.textHeader,{fontStyle:'normal',fontSize:22,marginBottom:20,marginLeft:0}]}> 
